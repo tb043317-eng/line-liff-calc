@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔮 隔天多空預測算價</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #f8fafc;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .card {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 24px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    h2 {
+      margin-top: 0;
+      color: #38bdf8;
+      font-size: 20px;
+      text-align: center;
+    }
+    .tips {
+      background: rgba(56, 189, 248, 0.1);
+      border-left: 3px solid #38bdf8;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: #93c5fd;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+    .input-group {
+      margin-bottom: 14px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid #475569;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 15px;
+      box-sizing: border-box;
+      outline: none;
+    }
+    input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(90deg, #0284c7 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>🔮 隔天多空預測算價</h2>
+    <div class="tips">💡 口訣：算下午夜盤用純日盤；算隔天日盤用全盤（日+夜）</div>
+    
+    <div class="input-group">
+      <label>全日最高價 (H)</label>
+      <input type="number" id="high" placeholder="例如：46140">
+    </div>
+    <div class="input-group">
+      <label>全日最低價 (L)</label>
+      <input type="number" id="low" placeholder="例如：45555">
+    </div>
+    <div class="input-group">
+      <label>當日收盤價 (C)</label>
+      <input type="number" id="close" placeholder="例如：45975">
+    </div>
+    <div class="input-group">
+      <label>外資空單未平倉 (口)</label>
+      <input type="number" id="short" placeholder="例如：32000">
+    </div>
+    <div class="input-group">
+      <label>選擇權 P/C 比 (%)</label>
+      <input type="number" id="pc" placeholder="例如：108">
+    </div>
+
+    <button class="btn-submit" onclick="submitData()">🔮 開始預測計算</button>
+  </div>
+
+  <script>
+    // 請將這裡替換為你在 LINE Developers 申請到的 LIFF ID
+    const MY_LIFF_ID = "2011175814-HxuwMiQN";
+
+    document.addEventListener("DOMContentLoaded", function() {
+      liff.init({ liffId: MY_LIFF_ID });
+    });
+
+    function submitData() {
+      const h = document.getElementById("high").value;
+      const l = document.getElementById("low").value;
+      const c = document.getElementById("close").value;
+      const s = document.getElementById("short").value;
+      const pc = document.getElementById("pc").value;
+
+      if (!h || !l || !c || !s || !pc) {
+        alert("請完整填寫所有數據！");
+        return;
+      }
+
+      const msg = `${h} ${l} ${c} ${s} ${pc}`;
+
+      // 透過 LIFF 直接讓使用者在 LINE 聊天室發送數據訊息
+      liff.sendMessages([{ type: 'text', text: msg }])
+        .then(() => {
+          liff.closeWindow(); // 發送完成後自動關閉視窗
+        })
+        .catch((err) => {
+          alert("發送失敗：" + err);
+        });
+    }
+  </script>
+</body>
+</html>
