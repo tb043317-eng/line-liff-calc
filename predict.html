@@ -111,36 +111,77 @@
   </div>
 
   <script>
-    // 請將這裡替換為你在 LINE Developers 申請到的 LIFF ID
-    const MY_LIFF_ID ="2011175814-7uLM4NDm";
+  // 請將這裡替換為你在 LINE Developers 申請到的 LIFF ID
+  const MY_LIFF_ID = "2011175814-7uLM4NDm";
+  let isLiffInit = false;
 
-    document.addEventListener("DOMContentLoaded", function() {
-      liff.init({ liffId: MY_LIFF_ID });
-    });
+  document.addEventListener("DOMContentLoaded", async function() {
+    try {
+      // 1. 等待 LIFF 初始化完成
+      await liff.init({ liffId: MY_LIFF_ID });
+      isLiffInit = true;
 
-    function submitData() {
-      const h = document.getElementById("high").value;
-      const l = document.getElementById("low").value;
-      const c = document.getElementById("close").value;
-      const s = document.getElementById("short").value;
-      const pc = document.getElementById("pc").value;
-
-      if (!h || !l || !c || !s || !pc) {
-        alert("請完整填寫所有數據！");
-        return;
+      // 2. 若在外部瀏覽器開啟且未登入，自動導向 LINE 登入頁面
+      if (!liff.isLoggedIn() && !liff.isInClient()) {
+        liff.login();
       }
+    } catch (err) {
+      console.error("LIFF 初始化失敗：", err);
+    }
+  });
 
-      const msg = `${h} ${l} ${c} ${s} ${pc}`;
+  async function submitData() {
+    if (!isLiffInit) {
+      alert("系統初始化中，請稍後再試！");
+      return;
+    }
 
-      // 透過 LIFF 直接讓使用者在 LINE 聊天室發送數據訊息
+    // 檢查登入狀態
+    if (!liff.isLoggedIn()) {
+      alert("請先完成 LINE 登入！");
+      liff.login();
+      return;
+    }
+
+    const h = document.getElementById("high").value;
+    const l = document.getElementById("low").value;
+    const c = document.getElementById("close").value;
+    const s = document.getElementById("short").value;
+    const pc = document.getElementById("pc").value;
+
+    if (!h || !l || !c || !s || !pc) {
+      alert("請完整填寫所有數據！");
+      return;
+    }
+
+    const msg = `${h} ${l} ${c} ${s} ${pc}`;
+
+    // 3. 根據開啟環境選擇發送方式
+    if (liff.isInClient()) {
+      // 在 LINE 聊天室內開啟：直接傳送訊息並關閉視窗
       liff.sendMessages([{ type: 'text', text: msg }])
         .then(() => {
-          liff.closeWindow(); // 發送完成後自動關閉視窗
+          liff.closeWindow();
         })
         .catch((err) => {
           alert("發送失敗：" + err);
         });
+    } else {
+      // 在外部瀏覽器開啟：改用 Share Target Picker 讓使用者選擇發送對象
+      if (liff.isApiAvailable('shareTargetPicker')) {
+        liff.shareTargetPicker([{ type: 'text', text: msg }])
+          .then((res) => {
+            if (res) {
+              alert("傳送成功！");
+            }
+          })
+          .catch((err) => {
+            alert("分享失敗：" + err);
+          });
+      } else {
+        alert("外部瀏覽器不支援直接發送訊息，請從 LINE 聊天室內開啟此頁面。");
+      }
     }
-  </script>
-</body>
+  }
+</script>
 </html>
